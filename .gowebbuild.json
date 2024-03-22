@@ -1,0 +1,26 @@
+{
+  "Watch": {
+    "Paths": ["./frontend/src"]
+  },
+  "Copy": [{
+    "Src": "./frontend/index.html",
+    "Dest": "./frontend-dist"
+  }],
+  "Link": {
+    "From": "/home/pk/web/tp-elements",
+    "To": "./frontend"
+  },
+  "ESBuild": {
+    "EntryPoints": [
+      "./frontend/src/the-app.js"
+    ],
+    "Outdir": "./frontend-dist",
+    "Sourcemap": 1,
+    "Format": 3,
+    "Splitting": true,
+    "Platform": 0,
+    "Bundle": true,
+    "Write": true,
+    "LogLevel": 3
+  }
+}

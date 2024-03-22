@@ -1,0 +1,21 @@
+{
+  "name": "frontend",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "trading_peter",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@tp/helpers": "^2.2.0",
+    "@tp/tp-button": "^1.2.0",
+    "@tp/tp-dropdown": "^1.3.2",
+    "@tp/tp-form": "^1.1.0",
+    "@tp/tp-icon": "^1.0.1",
+    "@tp/tp-input": "^1.0.6",
+    "@tp/tp-router": "^1.0.5",
+    "lit": "^3.1.2"
+  }
+}
