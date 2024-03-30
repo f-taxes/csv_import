@@ -22,7 +22,7 @@ type Ctl struct {
 
 type Manifest struct {
 	ID         string `json:"id"`         // Unique ID of the plugin.
-	Type       string `json:"type"`       // Type of the plugin. Currently only "TxSource" is supported.
+	Type       string `json:"type"`       // Type of the plugin. Currently "Source" and "Report" are supported.
 	Label      string `json:"label"`      // Name of the plugin as presented in the apps UI.
 	Author     Author `json:"author"`     // Author of the plugin. Can include a social media link as well. See Author struct.
 	Version    string `json:"version"`    // Version of the plugin.

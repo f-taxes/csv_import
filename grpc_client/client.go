@@ -53,15 +53,18 @@ func (c *FTaxesClient) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (c *FTaxesClient) SubmitTransaction(ctx context.Context, tx *proto.SrcTx) error {
-	tx.Plugin = global.Plugin.ID
-	tx.PluginVersion = global.Plugin.Version
-	tx.Created = timestamppb.Now()
-	_, err := c.GrpcClient.SubmitTransaction(ctx, tx)
+func (c *FTaxesClient) SubmitTrade(ctx context.Context, t *proto.Trade) error {
+	t.Plugin = global.Plugin.ID
+	t.PluginVersion = global.Plugin.Version
+	t.Created = timestamppb.Now()
+	_, err := c.GrpcClient.SubmitTrade(ctx, t)
 	return err
 }
 
-func (c *FTaxesClient) SubmitTransfer(ctx context.Context, transfer *proto.SrcTransfer) error {
+func (c *FTaxesClient) SubmitTransfer(ctx context.Context, transfer *proto.Transfer) error {
+	transfer.Plugin = global.Plugin.ID
+	transfer.PluginVersion = global.Plugin.Version
+	transfer.Created = timestamppb.Now()
 	_, err := c.GrpcClient.SubmitTransfer(ctx, transfer)
 	return err
 }
@@ -72,7 +75,7 @@ func (c *FTaxesClient) SubmitGenericFee(ctx context.Context, gf *proto.SrcGeneri
 }
 
 func (c *FTaxesClient) ShowJobProgress(ctx context.Context, job *proto.JobProgress) error {
-	job.Plugin = global.Plugin.ID
+	job.Plugin = global.Plugin.Label
 	_, err := c.GrpcClient.ShowJobProgress(ctx, job)
 	return err
 }

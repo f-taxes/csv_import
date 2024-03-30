@@ -1,4 +1,4 @@
-package ftx
+package transactions
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type columnFunc func(val string, tx *proto.SrcTx) error
+type columnFunc func(val string, tx *proto.Trade) error
 
 type TransactionProcessor struct {
 	column  map[string]columnFunc
@@ -25,60 +25,60 @@ type TransactionProcessor struct {
 func NewTransactionProcessor() *TransactionProcessor {
 	return &TransactionProcessor{
 		column: map[string]columnFunc{
-			"ID": func(val string, tx *proto.SrcTx) error {
+			"ID": func(val string, tx *proto.Trade) error {
 				tx.TxID = val
 				return nil
 			},
-			"BaseCurrency": func(val string, tx *proto.SrcTx) error {
+			"BaseCurrency": func(val string, tx *proto.Trade) error {
 				if val != "" {
-					tx.Base = val
+					tx.Asset = val
 				}
 				return nil
 			},
-			"QuoteCurrency": func(val string, tx *proto.SrcTx) error {
+			"QuoteCurrency": func(val string, tx *proto.Trade) error {
 				if val != "" {
 					tx.Quote = val
 				}
 				return nil
 			},
-			"Fee": func(val string, tx *proto.SrcTx) error {
+			"Fee": func(val string, tx *proto.Trade) error {
 				tx.Fee = val
 				return nil
 			},
-			"FeeCurrency": func(val string, tx *proto.SrcTx) error {
+			"FeeCurrency": func(val string, tx *proto.Trade) error {
 				tx.FeeCurrency = val
 				return nil
 			},
-			"FeeRate": func(val string, tx *proto.SrcTx) error {
+			"FeeRate": func(val string, tx *proto.Trade) error {
 				tx.FeeRate = val
 				return nil
 			},
-			"Market": func(val string, tx *proto.SrcTx) error {
+			"Market": func(val string, tx *proto.Trade) error {
 				tx.Ticker = val
-				tx.MarketType = proto.MarketType_SPOT
+				tx.AssetType = proto.AssetType_SPOT
 				if strings.HasSuffix(val, "-PERP") {
-					tx.MarketType = proto.MarketType_FUTURE
-					tx.Base = strings.TrimSuffix(val, "-PERP")
+					tx.AssetType = proto.AssetType_FUTURES
+					tx.Asset = strings.TrimSuffix(val, "-PERP")
 					tx.Quote = "USD"
 				}
 				return nil
 			},
-			"Liquidity": func(val string, tx *proto.SrcTx) error {
+			"Liquidity": func(val string, tx *proto.Trade) error {
 				tx.OrderType = proto.OrderType_TAKER
 				if val == "maker" {
 					tx.OrderType = proto.OrderType_MAKER
 				}
 				return nil
 			},
-			"OrderID": func(val string, tx *proto.SrcTx) error {
+			"OrderID": func(val string, tx *proto.Trade) error {
 				tx.OrderID = val
 				return nil
 			},
-			"Price": func(val string, tx *proto.SrcTx) error {
+			"Price": func(val string, tx *proto.Trade) error {
 				tx.Price = val
 				return nil
 			},
-			"Side": func(val string, tx *proto.SrcTx) error {
+			"Side": func(val string, tx *proto.Trade) error {
 				tx.Action = proto.TxAction_BUY
 
 				if val == "sell" {
@@ -86,11 +86,11 @@ func NewTransactionProcessor() *TransactionProcessor {
 				}
 				return nil
 			},
-			"Size": func(val string, tx *proto.SrcTx) error {
+			"Size": func(val string, tx *proto.Trade) error {
 				tx.Amount = val
 				return nil
 			},
-			"Time": func(val string, tx *proto.SrcTx) error {
+			"Time": func(val string, tx *proto.Trade) error {
 				ts, err := time.Parse("2006-01-02 15:04:05.999999 -0700 -0700", val)
 				tx.Ts = timestamppb.New(ts)
 				return err
@@ -122,26 +122,26 @@ func (t *TransactionProcessor) Parse(content []byte, account, fileName string) {
 			continue
 		}
 
-		tx := &proto.SrcTx{}
+		trade := &proto.Trade{}
 
 		for i, h := range t.headers {
 			val := rec[i]
 
 			if fn, ok := t.column[h]; ok {
-				fn(val, tx)
+				fn(val, trade)
 			}
 		}
 
 		recType := t.getValue(rec, "Type")
 
 		if recType == "otc" {
-			tx.Comment = "OTC Trade"
+			trade.Comment = "OTC Trade"
 		}
 
-		tx.Account = account
-		tx.Value = global.StrToDecimal(tx.Amount).Mul(global.StrToDecimal(tx.Price)).String()
+		trade.Account = account
+		trade.Value = global.StrToDecimal(trade.Amount).Mul(global.StrToDecimal(trade.Price)).String()
 
-		err = g.GrpcClient.SubmitTransaction(context.Background(), tx)
+		err = g.GrpcClient.SubmitTrade(context.Background(), trade)
 		if err != nil {
 			golog.Errorf("Failed to send transaction to F-Taxes: %v", err)
 			break

@@ -20,20 +20,26 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	FTaxes_SubmitTransaction_FullMethodName = "/FTaxesGrpc.FTaxes/SubmitTransaction"
-	FTaxes_SubmitTransfer_FullMethodName    = "/FTaxesGrpc.FTaxes/SubmitTransfer"
-	FTaxes_SubmitGenericFee_FullMethodName  = "/FTaxesGrpc.FTaxes/SubmitGenericFee"
-	FTaxes_ShowJobProgress_FullMethodName   = "/FTaxesGrpc.FTaxes/ShowJobProgress"
+	FTaxes_SubmitTrade_FullMethodName      = "/FTaxesGrpc.FTaxes/SubmitTrade"
+	FTaxes_SubmitTransfer_FullMethodName   = "/FTaxesGrpc.FTaxes/SubmitTransfer"
+	FTaxes_SubmitGenericFee_FullMethodName = "/FTaxesGrpc.FTaxes/SubmitGenericFee"
+	FTaxes_ShowJobProgress_FullMethodName  = "/FTaxesGrpc.FTaxes/ShowJobProgress"
+	FTaxes_GetSettings_FullMethodName      = "/FTaxesGrpc.FTaxes/GetSettings"
+	FTaxes_AppLog_FullMethodName           = "/FTaxesGrpc.FTaxes/AppLog"
+	FTaxes_StreamRecords_FullMethodName    = "/FTaxesGrpc.FTaxes/StreamRecords"
 )
 
 // FTaxesClient is the client API for FTaxes service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FTaxesClient interface {
-	SubmitTransaction(ctx context.Context, in *SrcTx, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	SubmitTransfer(ctx context.Context, in *SrcTransfer, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	SubmitTrade(ctx context.Context, in *Trade, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	SubmitTransfer(ctx context.Context, in *Transfer, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SubmitGenericFee(ctx context.Context, in *SrcGenericFee, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ShowJobProgress(ctx context.Context, in *JobProgress, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetSettings(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Settings, error)
+	AppLog(ctx context.Context, in *AppLogMsg, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	StreamRecords(ctx context.Context, in *StreamRecordsJob, opts ...grpc.CallOption) (FTaxes_StreamRecordsClient, error)
 }
 
 type fTaxesClient struct {
@@ -44,16 +50,16 @@ func NewFTaxesClient(cc grpc.ClientConnInterface) FTaxesClient {
 	return &fTaxesClient{cc}
 }
 
-func (c *fTaxesClient) SubmitTransaction(ctx context.Context, in *SrcTx, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *fTaxesClient) SubmitTrade(ctx context.Context, in *Trade, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, FTaxes_SubmitTransaction_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, FTaxes_SubmitTrade_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *fTaxesClient) SubmitTransfer(ctx context.Context, in *SrcTransfer, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *fTaxesClient) SubmitTransfer(ctx context.Context, in *Transfer, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, FTaxes_SubmitTransfer_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -80,14 +86,67 @@ func (c *fTaxesClient) ShowJobProgress(ctx context.Context, in *JobProgress, opt
 	return out, nil
 }
 
+func (c *fTaxesClient) GetSettings(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Settings, error) {
+	out := new(Settings)
+	err := c.cc.Invoke(ctx, FTaxes_GetSettings_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fTaxesClient) AppLog(ctx context.Context, in *AppLogMsg, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, FTaxes_AppLog_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fTaxesClient) StreamRecords(ctx context.Context, in *StreamRecordsJob, opts ...grpc.CallOption) (FTaxes_StreamRecordsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &FTaxes_ServiceDesc.Streams[0], FTaxes_StreamRecords_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &fTaxesStreamRecordsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type FTaxes_StreamRecordsClient interface {
+	Recv() (*Record, error)
+	grpc.ClientStream
+}
+
+type fTaxesStreamRecordsClient struct {
+	grpc.ClientStream
+}
+
+func (x *fTaxesStreamRecordsClient) Recv() (*Record, error) {
+	m := new(Record)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // FTaxesServer is the server API for FTaxes service.
 // All implementations must embed UnimplementedFTaxesServer
 // for forward compatibility
 type FTaxesServer interface {
-	SubmitTransaction(context.Context, *SrcTx) (*emptypb.Empty, error)
-	SubmitTransfer(context.Context, *SrcTransfer) (*emptypb.Empty, error)
+	SubmitTrade(context.Context, *Trade) (*emptypb.Empty, error)
+	SubmitTransfer(context.Context, *Transfer) (*emptypb.Empty, error)
 	SubmitGenericFee(context.Context, *SrcGenericFee) (*emptypb.Empty, error)
 	ShowJobProgress(context.Context, *JobProgress) (*emptypb.Empty, error)
+	GetSettings(context.Context, *emptypb.Empty) (*Settings, error)
+	AppLog(context.Context, *AppLogMsg) (*emptypb.Empty, error)
+	StreamRecords(*StreamRecordsJob, FTaxes_StreamRecordsServer) error
 	mustEmbedUnimplementedFTaxesServer()
 }
 
@@ -95,10 +154,10 @@ type FTaxesServer interface {
 type UnimplementedFTaxesServer struct {
 }
 
-func (UnimplementedFTaxesServer) SubmitTransaction(context.Context, *SrcTx) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SubmitTransaction not implemented")
+func (UnimplementedFTaxesServer) SubmitTrade(context.Context, *Trade) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SubmitTrade not implemented")
 }
-func (UnimplementedFTaxesServer) SubmitTransfer(context.Context, *SrcTransfer) (*emptypb.Empty, error) {
+func (UnimplementedFTaxesServer) SubmitTransfer(context.Context, *Transfer) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubmitTransfer not implemented")
 }
 func (UnimplementedFTaxesServer) SubmitGenericFee(context.Context, *SrcGenericFee) (*emptypb.Empty, error) {
@@ -106,6 +165,15 @@ func (UnimplementedFTaxesServer) SubmitGenericFee(context.Context, *SrcGenericFe
 }
 func (UnimplementedFTaxesServer) ShowJobProgress(context.Context, *JobProgress) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ShowJobProgress not implemented")
+}
+func (UnimplementedFTaxesServer) GetSettings(context.Context, *emptypb.Empty) (*Settings, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSettings not implemented")
+}
+func (UnimplementedFTaxesServer) AppLog(context.Context, *AppLogMsg) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AppLog not implemented")
+}
+func (UnimplementedFTaxesServer) StreamRecords(*StreamRecordsJob, FTaxes_StreamRecordsServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamRecords not implemented")
 }
 func (UnimplementedFTaxesServer) mustEmbedUnimplementedFTaxesServer() {}
 
@@ -120,26 +188,26 @@ func RegisterFTaxesServer(s grpc.ServiceRegistrar, srv FTaxesServer) {
 	s.RegisterService(&FTaxes_ServiceDesc, srv)
 }
 
-func _FTaxes_SubmitTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SrcTx)
+func _FTaxes_SubmitTrade_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Trade)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FTaxesServer).SubmitTransaction(ctx, in)
+		return srv.(FTaxesServer).SubmitTrade(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: FTaxes_SubmitTransaction_FullMethodName,
+		FullMethod: FTaxes_SubmitTrade_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FTaxesServer).SubmitTransaction(ctx, req.(*SrcTx))
+		return srv.(FTaxesServer).SubmitTrade(ctx, req.(*Trade))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _FTaxes_SubmitTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SrcTransfer)
+	in := new(Transfer)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -151,7 +219,7 @@ func _FTaxes_SubmitTransfer_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: FTaxes_SubmitTransfer_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FTaxesServer).SubmitTransfer(ctx, req.(*SrcTransfer))
+		return srv.(FTaxesServer).SubmitTransfer(ctx, req.(*Transfer))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -192,6 +260,63 @@ func _FTaxes_ShowJobProgress_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FTaxes_GetSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FTaxesServer).GetSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FTaxes_GetSettings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FTaxesServer).GetSettings(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FTaxes_AppLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AppLogMsg)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FTaxesServer).AppLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FTaxes_AppLog_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FTaxesServer).AppLog(ctx, req.(*AppLogMsg))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FTaxes_StreamRecords_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(StreamRecordsJob)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FTaxesServer).StreamRecords(m, &fTaxesStreamRecordsServer{stream})
+}
+
+type FTaxes_StreamRecordsServer interface {
+	Send(*Record) error
+	grpc.ServerStream
+}
+
+type fTaxesStreamRecordsServer struct {
+	grpc.ServerStream
+}
+
+func (x *fTaxesStreamRecordsServer) Send(m *Record) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // FTaxes_ServiceDesc is the grpc.ServiceDesc for FTaxes service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -200,8 +325,8 @@ var FTaxes_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*FTaxesServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SubmitTransaction",
-			Handler:    _FTaxes_SubmitTransaction_Handler,
+			MethodName: "SubmitTrade",
+			Handler:    _FTaxes_SubmitTrade_Handler,
 		},
 		{
 			MethodName: "SubmitTransfer",
@@ -215,20 +340,38 @@ var FTaxes_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ShowJobProgress",
 			Handler:    _FTaxes_ShowJobProgress_Handler,
 		},
+		{
+			MethodName: "GetSettings",
+			Handler:    _FTaxes_GetSettings_Handler,
+		},
+		{
+			MethodName: "AppLog",
+			Handler:    _FTaxes_AppLog_Handler,
+		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamRecords",
+			Handler:       _FTaxes_StreamRecords_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "f-taxes.proto",
 }
 
 const (
-	PluginCtl_UpdateTransactions_FullMethodName = "/FTaxesGrpc.PluginCtl/UpdateTransactions"
+	PluginCtl_UpdateTrades_FullMethodName            = "/FTaxesGrpc.PluginCtl/UpdateTrades"
+	PluginCtl_ConvertPricesInTrade_FullMethodName    = "/FTaxesGrpc.PluginCtl/ConvertPricesInTrade"
+	PluginCtl_ConvertPricesInTransfer_FullMethodName = "/FTaxesGrpc.PluginCtl/ConvertPricesInTransfer"
 )
 
 // PluginCtlClient is the client API for PluginCtl service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PluginCtlClient interface {
-	UpdateTransactions(ctx context.Context, in *TxUpdate, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	UpdateTrades(ctx context.Context, in *TxUpdate, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ConvertPricesInTrade(ctx context.Context, in *TradeConversionJob, opts ...grpc.CallOption) (*Trade, error)
+	ConvertPricesInTransfer(ctx context.Context, in *TransferConversionJob, opts ...grpc.CallOption) (*Transfer, error)
 }
 
 type pluginCtlClient struct {
@@ -239,9 +382,27 @@ func NewPluginCtlClient(cc grpc.ClientConnInterface) PluginCtlClient {
 	return &pluginCtlClient{cc}
 }
 
-func (c *pluginCtlClient) UpdateTransactions(ctx context.Context, in *TxUpdate, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *pluginCtlClient) UpdateTrades(ctx context.Context, in *TxUpdate, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, PluginCtl_UpdateTransactions_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, PluginCtl_UpdateTrades_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginCtlClient) ConvertPricesInTrade(ctx context.Context, in *TradeConversionJob, opts ...grpc.CallOption) (*Trade, error) {
+	out := new(Trade)
+	err := c.cc.Invoke(ctx, PluginCtl_ConvertPricesInTrade_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginCtlClient) ConvertPricesInTransfer(ctx context.Context, in *TransferConversionJob, opts ...grpc.CallOption) (*Transfer, error) {
+	out := new(Transfer)
+	err := c.cc.Invoke(ctx, PluginCtl_ConvertPricesInTransfer_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +413,9 @@ func (c *pluginCtlClient) UpdateTransactions(ctx context.Context, in *TxUpdate, 
 // All implementations must embed UnimplementedPluginCtlServer
 // for forward compatibility
 type PluginCtlServer interface {
-	UpdateTransactions(context.Context, *TxUpdate) (*emptypb.Empty, error)
+	UpdateTrades(context.Context, *TxUpdate) (*emptypb.Empty, error)
+	ConvertPricesInTrade(context.Context, *TradeConversionJob) (*Trade, error)
+	ConvertPricesInTransfer(context.Context, *TransferConversionJob) (*Transfer, error)
 	mustEmbedUnimplementedPluginCtlServer()
 }
 
@@ -260,8 +423,14 @@ type PluginCtlServer interface {
 type UnimplementedPluginCtlServer struct {
 }
 
-func (UnimplementedPluginCtlServer) UpdateTransactions(context.Context, *TxUpdate) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateTransactions not implemented")
+func (UnimplementedPluginCtlServer) UpdateTrades(context.Context, *TxUpdate) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTrades not implemented")
+}
+func (UnimplementedPluginCtlServer) ConvertPricesInTrade(context.Context, *TradeConversionJob) (*Trade, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConvertPricesInTrade not implemented")
+}
+func (UnimplementedPluginCtlServer) ConvertPricesInTransfer(context.Context, *TransferConversionJob) (*Transfer, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConvertPricesInTransfer not implemented")
 }
 func (UnimplementedPluginCtlServer) mustEmbedUnimplementedPluginCtlServer() {}
 
@@ -276,20 +445,56 @@ func RegisterPluginCtlServer(s grpc.ServiceRegistrar, srv PluginCtlServer) {
 	s.RegisterService(&PluginCtl_ServiceDesc, srv)
 }
 
-func _PluginCtl_UpdateTransactions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _PluginCtl_UpdateTrades_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TxUpdate)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PluginCtlServer).UpdateTransactions(ctx, in)
+		return srv.(PluginCtlServer).UpdateTrades(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PluginCtl_UpdateTransactions_FullMethodName,
+		FullMethod: PluginCtl_UpdateTrades_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PluginCtlServer).UpdateTransactions(ctx, req.(*TxUpdate))
+		return srv.(PluginCtlServer).UpdateTrades(ctx, req.(*TxUpdate))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PluginCtl_ConvertPricesInTrade_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TradeConversionJob)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginCtlServer).ConvertPricesInTrade(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PluginCtl_ConvertPricesInTrade_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginCtlServer).ConvertPricesInTrade(ctx, req.(*TradeConversionJob))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PluginCtl_ConvertPricesInTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TransferConversionJob)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginCtlServer).ConvertPricesInTransfer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PluginCtl_ConvertPricesInTransfer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginCtlServer).ConvertPricesInTransfer(ctx, req.(*TransferConversionJob))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -302,8 +507,16 @@ var PluginCtl_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PluginCtlServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "UpdateTransactions",
-			Handler:    _PluginCtl_UpdateTransactions_Handler,
+			MethodName: "UpdateTrades",
+			Handler:    _PluginCtl_UpdateTrades_Handler,
+		},
+		{
+			MethodName: "ConvertPricesInTrade",
+			Handler:    _PluginCtl_ConvertPricesInTrade_Handler,
+		},
+		{
+			MethodName: "ConvertPricesInTransfer",
+			Handler:    _PluginCtl_ConvertPricesInTransfer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

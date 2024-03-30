@@ -9,11 +9,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"gitea.codeblob.work/pk/gut/conf"
-	iu "gitea.codeblob.work/pk/gut/irisutils"
+	"github.com/f-taxes/csv_import/conf"
 	"github.com/f-taxes/csv_import/global"
 	"github.com/f-taxes/csv_import/grpc_client"
-	"github.com/f-taxes/csv_import/processors/ftx"
+	iu "github.com/f-taxes/csv_import/irisutils"
+	ftx_deposits "github.com/f-taxes/csv_import/processors/ftx/deposits"
+	ftx_transactions "github.com/f-taxes/csv_import/processors/ftx/transactions"
 	"github.com/f-taxes/csv_import/proto"
 	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
@@ -22,9 +23,9 @@ import (
 )
 
 var schemas = []global.SchemaProcessor{
-	{Name: "ftx_deposits", Label: "FTX Deposit History"},
+	{Name: "ftx_deposits", Label: "FTX Deposit History", Processor: ftx_deposits.NewDepositProcessor()},
 	{Name: "ftx_withdrawals", Label: "FTX Withdrawal History"},
-	{Name: "ftx_transactions", Label: "FTX Transaction History", Processor: ftx.NewTransactionProcessor()},
+	{Name: "ftx_transactions", Label: "FTX Transaction History", Processor: ftx_transactions.NewTransactionProcessor()},
 }
 
 func Start(address string, webAssets embed.FS) {

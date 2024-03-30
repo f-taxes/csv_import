@@ -1,5 +1,5 @@
 {
-  "type": "TxSource",
+  "type": "Source",
   "id": "csv_import",
   "label": "CSV Import",
   "author": {

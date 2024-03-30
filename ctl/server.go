@@ -14,7 +14,7 @@ type PluginCtl struct {
 	pb.UnimplementedPluginCtlServer
 }
 
-func (s *PluginCtl) UpdateTransactions(ctx context.Context, job *pb.TxUpdate) (*emptypb.Empty, error) {
+func (s *PluginCtl) UpdateTrades(ctx context.Context, job *pb.TxUpdate) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }
 
