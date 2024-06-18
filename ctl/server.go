@@ -1,21 +1,15 @@
 package ctl
 
 import (
-	"context"
 	"net"
 
 	pb "github.com/f-taxes/csv_import/proto"
 	"github.com/kataras/golog"
 	"google.golang.org/grpc"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type PluginCtl struct {
 	pb.UnimplementedPluginCtlServer
-}
-
-func (s *PluginCtl) UpdateTrades(ctx context.Context, job *pb.TxUpdate) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, nil
 }
 
 func Start(address string) {

@@ -16,10 +16,10 @@
     "darwin": "https://github.com/f-taxes/csv_import/releases/download/1.0.0/csv_import-darwin.zip"
   },
   "ctl": {
-    "address": "127.0.0.1:40001"
+    "address": "127.0.0.1:4100"
   },
   "web": {
-    "address": "127.0.0.1:40000",
+    "address": "127.0.0.1:4101",
     "configPage": "/config"
   }
 }

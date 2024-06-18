@@ -49,15 +49,18 @@ func NewTransactionProcessor() *TransactionProcessor {
 				tx.FeeCurrency = val
 				return nil
 			},
-			"FeeRate": func(val string, tx *proto.Trade) error {
-				tx.FeeRate = val
-				return nil
-			},
 			"Market": func(val string, tx *proto.Trade) error {
 				tx.Ticker = val
-				tx.AssetType = proto.AssetType_SPOT
+
+				isDerivative := strings.HasSuffix(val, "-PERP")
+
+				tx.Props = &proto.TradeProps{
+					IsMarginTrade: isDerivative,
+					IsDerivative:  isDerivative,
+					IsPhysical:    !isDerivative,
+				}
+
 				if strings.HasSuffix(val, "-PERP") {
-					tx.AssetType = proto.AssetType_FUTURES
 					tx.Asset = strings.TrimSuffix(val, "-PERP")
 					tx.Quote = "USD"
 				}
